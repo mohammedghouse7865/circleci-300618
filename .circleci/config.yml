@@ -20,17 +20,21 @@ jobs:
       - checkout
 
       # Download and cache dependencies
-      -- run: bundle install & bundle clean
-  - restore_cache:
-      keys:
-        # when lock file changes, use increasingly general patterns to restore cache
-        - v1-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
-        - v1-gem-cache-{{ arch }}-{{ .Branch }}-
-        - v1-gem-cache-{{ arch }}-
-  - save_cache:
-      paths:
-        - ~/.bundle
-      key: v1-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "Gemfile.lock" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          name: install dependencies
+          command: |
+            bundle install --jobs=4 --retry=3 --path vendor/bundle
+
+      - save_cache:
+          paths:
+            - ./vendor/bundle
+          key: v1-dependencies-{{ checksum "Gemfile.lock" }}
         
       # Database setup
       - run: bundle exec rake db:create
