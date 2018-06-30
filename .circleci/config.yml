@@ -25,6 +25,10 @@ jobs:
           - v1-dependencies-{{ checksum "Gemfile.lock" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
+          # here
+          - gem-cache-v1-{{ arch }}-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
+          - gem-cache-v1-{{ arch }}-{{ .Branch }}
+          - gem-cache-v1
 
       - run:
           name: install dependencies
@@ -32,6 +36,7 @@ jobs:
             bundle install --jobs=4 --retry=3 --path vendor/bundle
 
       - save_cache:
+          key: gem-cache-v1-{{ arch }}-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
           paths:
             - ./vendor/bundle
           key: v1-dependencies-{{ checksum "Gemfile.lock" }}
